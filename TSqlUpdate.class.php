@@ -1,61 +1,61 @@
 <?php
 
-    // Classe TSqlUpdate - Essa classe provê meios para manipulação de uma instrução UPDATE no banco de dados.
+    // Classe TSqlUpdate - Essa classe provê meios para manipulação de uma instrução UPDATE nos bancos de dados.
     final class TSqlUpdate extends TSqlInstruction {
-    
-    private $colunmValues;
-    /* Método setRowData () - Atribui valor a determinadas colunas no banco de dados que serão modificadas
-@Param $column = coluna da tabela
-@Param $value = valor a ser aramzaenado*/
+    private $columnValues;
 
-    public function setRowData ($column,$value){
+    /* Método setRowData() - Atribui valores a determiadas colunas no banco de dados que serão modificadas.
+    @param $column = Coluna da tabela
+    @param $value = Valor a ser armazenado */
+    
+    public function setRowData($column,$value){
 
     // Verifica se um dado é escalar (string, inteiro...)
     if(is_scalar($value)){
     if(is_string($value) and (!empty($value))){
-
+        
     // Adiciona \ em aspas
     $value = addslashes($value);
+    
+    // Caso seja uma string
+    $this->columnValues[$column] = "'$value'";
+}
 
-    // Caso se uma string
-    $this ->colunmValues[$column] = $value;
+    else if (is_bool($value)){
+    // Caso seja um booleano   
+    $this->columnValues[$column] = $value ?'TRUE':'FALSE';
 }
-    else if(is_bool($value)){
-    // Caso eja um booleano
-    $this ->colunmValues[$column] = $value ? 'TRUE': 'FALSE'; 
-}
-    else if ($value!==''){
+    
+    else if ($value!=='') {
     // Caso seja um tipo de dado
-    $this ->colunmValues[$column] = $value;
+    $this ->columnValues[$column] = $value;
 }
     else{
-    // Caso seja NUUL
-    $this ->colunmValues[$column] = 'NULL';
+    // Caso seja NULL
+    $this->columnValues[$column] = "NULL";
 }
 }
 }
-
-    // Método getInstruction() - Retorna a instrução UPDATE em forma de string 
-
-    public function getInstruction (){
-    // Monta a string UPDATE
-    $this->sql= "UPDATE {$this->entity}";
-    // Monta os pares: coluna=valor
-    if($this->colunmValues){
-    foreach($this->colunmValues as $column=>$value){
-    $set [] = "{$column}={$value}";
-}
-    $this ->sql.= "SET". implode (",", $set );
+    // Método getInstruction() - Retorna a instrução UPDATE em forma de string
+    public function getInstruction() {
     
-    // Retorna a clasula where do objeto $this->
-    if ($this->criteria){
-    $this ->sql.= "WHERE". $this->criteria->dump();
+    // Monta a string UPDATE
+    $this->sql = "UPDATE {$this->entity}";
+        
+    // Monta os pares: coluna=valor
+    if($this->columnValues){
+    foreach ($this->columnValues as $column=>$value){
+    $set[] = "{$column} = {$value}";
+}
+}
+    $this->sql .= 'SET' . implode (',', $set);
+    // Retorna a clausula where do objeto $this->criteria
 
+    if($this->criteria){
+    $this->sql .= 'WHERE'. $this->criteria->dump();
+}
+    return $this->sql;
 }
 }
-return $this->sql;
-}
-}
-
 
 ?>
